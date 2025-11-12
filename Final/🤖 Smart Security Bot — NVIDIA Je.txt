@@ -1,0 +1,117 @@
+# 🤖 Smart Security Bot — NVIDIA Jetson Orin Nano (Agentic AI + YOLOv5)
+
+### 🔒 AI-Driven Surveillance & Intelligent Alert System
+
+The **Smart Security Bot** is an autonomous AI-powered surveillance system built on the **NVIDIA Jetson Orin Nano**.  
+It combines **real-time object detection (YOLOv5)** with an **Agentic AI model (TinyLlama)** to make intelligent security decisions such as triggering alarms, activating lights, or logging activity — all in real time.
+
+---
+
+## 🚀 Project Overview
+
+This project detects **humans (persons)** through a connected camera and consults an **Agentic AI model** to decide the appropriate response:
+- **Sound buzzer** 🔊  
+- **Trigger LED alert** 💡  
+- **Log silently** 📝  
+- **Notify owner** 📩 (optional)
+
+The system uses:
+- **YOLOv5** for vision detection  
+- **FastAPI** + **TinyLlama** for agentic decision-making  
+- **Jetson GPIOs** for real-world hardware control  
+
+---
+
+## 🧩 Project Workflow
+
+### ⚙️ 1. Object Detection (YOLOv5)
+- The camera feed is captured and passed through **YOLOv5s** (small variant).  
+- If a **person** is detected with >60% confidence, detection data is sent to the AI agent.  
+- If no person is detected, the bot logs "🙈 No person detected."
+
+### 🧠 2. Decision-Making (Agentic AI)
+- A **TinyLlama 1.1B Chat model** (optimized for FP16 GPU inference) runs on the Jetson.  
+- The AI receives the detection event and chooses one of the following actions:
+(A) Log silently
+(B) Trigger LED alert
+(C) Sound buzzer
+(D) Notify owner
+
+- The response is interpreted by the YOLO controller.
+
+### 🔌 3. Hardware Control (GPIO)
+- Based on the AI’s decision:
+- **LED Alert:** LED flashes for 1 second.  
+- **Buzzer Alert:** Piezo buzzer beeps for 0.5 seconds.  
+- **Servo:** Can rotate to indicate a mechanical response (optional).  
+- The system waits briefly between alerts to avoid repetition.
+
+### 🔁 4. Continuous Monitoring
+- The system continuously monitors the environment, detects motion/persons, and acts accordingly — all in real-time.
+
+---
+
+## 🧱 Folder Structure
+smart_security_bot/
+│
+├── agentic_ai_server.py # FastAPI backend running TinyLlama (Agentic AI)
+│
+├── vision/
+│ └── yolo_detector.py # YOLOv5-based person detection + AI communication
+│
+├── sensors/
+│ ├── gpio_control.py # Controls LED, buzzer, servo on Jetson GPIO
+│ ├── pir_sensor.py # Optional motion detector (PIR)
+│ └── init.py
+│
+├── utils/ # (Optional) Helper functions/logging
+├── actions/ # (Optional) Custom action modules
+├── agent/ # (Optional) AI prompt templates
+├── data/ # (Optional) Test images or saved detections
+│
+├── requirements.txt # All dependencies
+└── README.md # This documentation# 
+
+
+⚡ Hardware Setup
+
+| Component | Connection Pin | Jetson Board Pin | Description |
+|------------|----------------|------------------|--------------|
+| **LED** | Signal | 18 | Visual alert light |
+| **Buzzer (v1.2)** | SIG | 15 | Alarm sound output |
+| **Servo (SG90)** | Signal | 33 | Rotational indicator |
+| **Camera** | USB | - | Zebronics USB webcam |
+| **Power** | 5V + GND | Jetson Pins | External power or GPIO |
+
+
+🧱 Model Optimization
+
+TinyLlama is loaded in FP16 mode for faster inference on Jetson GPUs.
+
+
+🏢 Eorkflow
+
+       ┌────────────┐
+       │   CAMERA   │
+       └─────┬──────┘
+             │
+             ▼
+       ┌────────────┐
+       │  YOLOv5s   │───> Detects Person (>60%)
+       └─────┬──────┘
+             │
+             ▼
+       ┌─────────────────────┐
+       │ Agentic AI (TinyLlama)│
+       │  Decision Generation │
+       └────────┬────────────┘
+                │
+                ▼
+       ┌─────────────────────┐
+       │ Jetson GPIO Control │
+       │ LED / Buzzer / Servo│
+       └─────────────────────┘
+
+
+
+
